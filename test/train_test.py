@@ -20,6 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+
 import unittest
 import tempfile
 import numpy as np

@@ -31,12 +31,12 @@ class TrainTest(unittest.TestCase):
   
     @classmethod
     def setUpClass(self):
-        self.tmp_dir = tempfile.mkdtemp()
+        self.tmp_dir = "/tmp/"
         
     @classmethod
     def tearDownClass(self):
         # Recursively remove the temporary directory
-        shutil.rmtree(self.tmp_dir)
+        shutil.rmtree("/tmp/")
 
     def test_restore_noema(self):
         
@@ -71,14 +71,21 @@ class TrainTest(unittest.TestCase):
         
         w_reference = sess.run('W:0')
         b_reference = sess.run('b:0')
+        print("w_reference = ", w_reference)
         
-        saver.save(sess, os.path.join(self.tmp_dir, "model_ex1"))
+        saver.save(sess, os.path.join("/tmp/", "model_ex1"))
+        print(os.path.join("/tmp/", "model_ex1"))
+        # saver.save(sess, '/tmp/model_ex1/kk.ckpt')
         
         tf.reset_default_graph()
 
-        saver = tf.train.import_meta_graph(os.path.join(self.tmp_dir, "model_ex1.meta"))
+        saver = tf.train.import_meta_graph(os.path.join("/tmp/", "model_ex1.meta"))
+        print(os.path.join("/tmp/", "model_ex1.meta"))
+        # saver = tf.train.import_meta_graph('/tmp/model_ex1/kk.meta')        
         sess = tf.Session()
-        saver.restore(sess, os.path.join(self.tmp_dir, "model_ex1"))
+        saver.restore(sess, os.path.join("/tmp/", "model_ex1"))
+        print(os.path.join("/tmp/", "model_ex1"))
+        # saver.restore(sess, '/tmp/model_ex1/kk.ckpt')
         
         w_restored = sess.run('W:0')
         b_restored = sess.run('b:0')
@@ -86,8 +93,10 @@ class TrainTest(unittest.TestCase):
         self.assertAlmostEqual(w_reference, w_restored, 'Restored model use different weight than the original model')
         self.assertAlmostEqual(b_reference, b_restored, 'Restored model use different weight than the original model')
 
+        print("test_restore_noema() finish!!")
 
-    @unittest.skip("Skip restore EMA test case for now")
+
+    # @unittest.skip("Skip restore EMA test case for now")
     def test_restore_ema(self):
         
         # Create 100 phony x, y data points in NumPy, y = x * 0.1 + 0.3
@@ -128,11 +137,14 @@ class TrainTest(unittest.TestCase):
         w_reference = sess.run('W/ExponentialMovingAverage:0')
         b_reference = sess.run('b/ExponentialMovingAverage:0')
         
-        saver.save(sess, os.path.join(self.tmp_dir, "model_ex1"))
+        saver.save(sess, os.path.join("/tmp/", "model_ex1"))
+        print("white-debug")
+        print(os.path.join("/tmp/", "model_ex1"))
+        # saver.save(sess, '/tmp/model_ex1/kk.ckpt')
                 
         tf.reset_default_graph()
 
-        tf.train.import_meta_graph(os.path.join(self.tmp_dir, "model_ex1.meta"))
+        tf.train.import_meta_graph(os.path.join("/tmp/", "model_ex1.meta"))
         sess = tf.Session()
         
         print('------------------------------------------------------')
@@ -159,7 +171,7 @@ class TrainTest(unittest.TestCase):
             
         saver = tf.train.Saver(restore_vars, name='ema_restore')
         
-        saver.restore(sess, os.path.join(self.tmp_dir, "model_ex1"))
+        saver.restore(sess, os.path.join("/tmp/", "model_ex1"))
         
         w_restored = sess.run('W:0')
         b_restored = sess.run('b:0')

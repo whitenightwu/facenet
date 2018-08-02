@@ -26,6 +26,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+
+
 import tensorflow as tf
 import numpy as np
 import argparse
@@ -112,11 +117,11 @@ def main(args):
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('dataset_dir', type=str,
+    parser.add_argument('--dataset_dir', type=str,
         help='Path to the directory containing aligned dataset.')
-    parser.add_argument('model_file', type=str,
+    parser.add_argument('--model_file', type=str,
         help='File containing the frozen model in protobuf (.pb) format to use for feature extraction.')
-    parser.add_argument('data_file_name', type=str,
+    parser.add_argument('--data_file_name', type=str,
         help='The name of the file to store filtering data in.')
     parser.add_argument('--image_size', type=int,
         help='Image size.', default=160)

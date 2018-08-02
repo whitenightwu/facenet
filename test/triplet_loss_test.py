@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+
 import unittest
 import tensorflow as tf
 import numpy as np
@@ -47,6 +50,11 @@ class DemuxEmbeddingsTest(unittest.TestCase):
                 pos_dist_sqr = np.sum(np.square(emb[0::3,:]-emb[1::3,:]),1)
                 neg_dist_sqr = np.sum(np.square(emb[0::3,:]-emb[2::3,:]),1)
                 np_triplet_loss = np.mean(np.maximum(0.0, pos_dist_sqr - neg_dist_sqr + alpha))
+
+                print("white-debug")
+                print(pos_dist_sqr)
+                print(neg_dist_sqr)
+                print(np_triplet_loss)
                 
                 np.testing.assert_almost_equal(tf_triplet_loss, np_triplet_loss, decimal=5, err_msg='Triplet loss is incorrect')
                       

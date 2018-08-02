@@ -20,6 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+
 import unittest
 import tensorflow as tf
 import numpy as np
@@ -61,10 +64,17 @@ class CenterLossTest(unittest.TestCase):
                     feats = create_features(label_to_center, batch_size, nrof_features, lbls)
 
                     center_loss_, centers_ = sess.run([center_loss, centers], feed_dict={features:feats, labels:lbls})
+
+                    print(center_loss_)
+                    print(centers_)
+
                     
                 # After a large number of updates the estimated centers should be close to the true ones
                 np.testing.assert_almost_equal(centers_, label_to_center, decimal=5, err_msg='Incorrect estimated centers')
                 np.testing.assert_almost_equal(center_loss_, 0.0, decimal=5, err_msg='Incorrect center loss')
+
+                print("white-debug: ")
+                print(center_loss_)
                 
 
 def create_features(label_to_center, batch_size, nrof_features, labels):

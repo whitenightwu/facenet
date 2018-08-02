@@ -569,3 +569,51 @@ def write_arguments_to_file(args, filename):
     with open(filename, 'w') as f:
         for key, value in iteritems(vars(args)):
             f.write('%s: %s\n' % (key, str(value)))
+
+
+
+def read_and_augment_data(image_list, label_list, image_size, batch_size, max_nrof_epochs, 
+        random_crop, random_flip, random_rotate, nrof_preprocess_threads, shuffle=True):
+    
+    images = tf.convert_to_tensor(image_list, dtype=tf.string)
+    labels = tf.convert_to_tensor(label_list, dtype=tf.int32)
+    # labels = ops.convert_to_tensor(list(label_list), dtype=tf.int32)
+    
+    # Makes an input queue
+    input_queue = tf.train.slice_input_producer([images, labels],
+        num_epochs=max_nrof_epochs, shuffle=shuffle)
+
+    images_and_labels = []
+    for _ in range(nrof_preprocess_threads):
+        image, label = read_images_from_disk(input_queue)
+        if random_rotate:
+            image = tf.py_func(random_rotate_image, [image], tf.uint8)
+        if random_crop:
+            image = tf.random_crop(image, [image_size, image_size, 3])
+        else:
+            image = tf.image.resize_image_with_crop_or_pad(image, image_size, image_size)
+        if random_flip:
+            image = tf.image.random_flip_left_right(image)
+        #pylint: disable=no-member
+        image.set_shape((image_size, image_size, 3))
+        image = tf.image.per_image_standardization(image)
+        images_and_labels.append([image, label])
+
+    image_batch, label_batch = tf.train.batch_join(
+        images_and_labels, batch_size=batch_size,
+        capacity=4 * nrof_preprocess_threads * batch_size,
+        allow_smaller_final_batch=True)
+  
+    return image_batch, label_batch
+
+def read_images_from_disk(input_queue):
+    """Consumes a single filename and label as a ' '-delimited string.
+    Args:
+      filename_and_label_tensor: A scalar string tensor.
+    Returns:
+      Two tensors: the decoded image, and the string label.
+    """
+    label = input_queue[1]
+    file_contents = tf.read_file(input_queue[0])
+    example = tf.image.decode_image(file_contents, channels=3)
+    return example, label

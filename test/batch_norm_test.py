@@ -20,6 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+import tensorflow.contrib.slim as slim
+import importlib
+
 import unittest
 import tensorflow as tf
 import models
@@ -28,24 +33,27 @@ import numpy.testing as testing
 
 class BatchNormTest(unittest.TestCase):
 
-
-    @unittest.skip("Skip batch norm test case")
+    # @unittest.skip("Skip batch norm test case")
     def testBatchNorm(self):
       
         tf.set_random_seed(123)
   
         x = tf.placeholder(tf.float32, [None, 20, 20, 10], name='input')
-        phase_train = tf.placeholder(tf.bool, name='phase_train')
+        # phase_train = tf.placeholder(tf.bool, name='phase_train')
+        phase_train = tf.placeholder(tf.float32, name='phase_train')
         
         # generate random noise to pass into batch norm
         #x_gen = tf.random_normal([50,20,20,10])
-        
-        bn = models.network.batch_norm(x, phase_train)
+
+        # network = importlib.import_module("")        
+        # bn = models.network.batch_norm(x, phase_train)
+
+        bn = slim.batch_norm(x, phase_train)
         
         init = tf.global_variables_initializer()
         sess = tf.Session(config=tf.ConfigProto())
         sess.run(init)
-  
+            
         with sess.as_default():
         
             #generate a constant variable to pass into batch norm
@@ -57,7 +65,10 @@ class BatchNormTest(unittest.TestCase):
             feed_dict = {x: y, phase_train: False}
             y1 = sess.run(bn, feed_dict=feed_dict)
             y2 = sess.run(bn, feed_dict=feed_dict)
-            
+
+            print("white-debug: ")
+            print(feed_dict)
+            print(y2)
             testing.assert_almost_equal(y1, y2, 10, 'Output from two forward passes with phase_train==false should be equal')
 
 
