@@ -92,3 +92,15 @@ ENV/
 
 # PyCharm project setting
 .idea
+
+# white
+origine-models/*
+results_models/*
+ydwu-test_1/*
+train_office_mobilenet/*
+
+# ydwu-*
+
+# images and emb_datasets for face_recognition
+zz_ydwu_test_2/*
+del-all/*
