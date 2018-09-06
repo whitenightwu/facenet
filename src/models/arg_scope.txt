@@ -1,0 +1,185 @@
+
+def mobilenet_v1_arg_scope(is_training=True,
+                           weight_decay=0.00004,
+                           stddev=0.09,
+                           regularize_depthwise=False,
+                           batch_norm_decay=0.9997,
+                           batch_norm_epsilon=0.001):
+  """Defines the default MobilenetV1 arg scope.
+  Args:
+    is_training: Whether or not we're training the model. If this is set to
+      None, the parameter is not added to the batch_norm arg_scope.
+    weight_decay: The weight decay to use for regularizing the model.
+    stddev: The standard deviation of the trunctated normal weight initializer.
+    regularize_depthwise: Whether or not apply regularization on depthwise.
+    batch_norm_decay: Decay for batch norm moving average.
+    batch_norm_epsilon: Small float added to variance to avoid dividing by zero
+      in batch norm.
+  Returns:
+    An `arg_scope` to use for the mobilenet v1 model.
+  """
+
+  # # # ###########################################
+  # batch_norm_params = {
+  #   # Decay for the moving averages.
+  #   'decay': 0.995,#0.9997
+  #   # epsilon to prevent 0s in variance.
+  #   'epsilon': 0.001,
+  #   # force in-place updates of mean and variance estimates
+  #   # 'updates_collections': None,
+  #   # Moving averages ends up in the trainable variables collection
+  #   'variables_collections': [ tf.GraphKeys.TRAINABLE_VARIABLES ],
+  #   # 'center': True,
+  #   'scale': True,
+  #   'is_training': is_training,
+  # }
+
+  # ###########################################
+  # batch_norm_params = {
+  #     'center': True,
+  #     'scale': True,
+  #     'decay': batch_norm_decay,
+  #     'epsilon': batch_norm_epsilon,
+  # }
+  # if is_training is not None:
+  #   batch_norm_params['is_training'] = is_training
+
+  batch_norm_params = {
+      'is_training': is_training,
+      'center': True,
+      'scale': True,
+      'fused': True,
+      'decay': 0.995,
+      'epsilon': 2e-5,
+      # force in-place updates of mean and variance estimates
+      'updates_collections': None,
+      # Moving averages ends up in the trainable variables collection
+      'variables_collections': [ tf.GraphKeys.TRAINABLE_VARIABLES ],
+  }
+  
+  # ###########################################
+
+    
+  with slim.arg_scope([slim.conv2d, slim.separable_conv2d],
+                      weights_initializer=slim.xavier_initializer_conv2d(),
+                      weights_regularizer=slim.l2_regularizer(weight_decay),
+                      activation_fn=tf.nn.relu,
+                      normalizer_fn=slim.batch_norm):
+    with slim.arg_scope([slim.batch_norm], **batch_norm_params) as sc:
+      print("mobilenet_v1_arg_scope")
+      return sc
+
+
+      # with slim.arg_scope(
+      #     [slim.conv2d, slim.separable_conv2d],
+      #     weights_initializer=slim.initializers.xavier_initializer(),
+      #     biases_initializer=slim.init_ops.zeros_initializer(),
+      #     weights_regularizer=slim.l2_regularizer(weight_decay)) as sc:
+
+  # ###########################################
+  # JZ_mobilenet.py  
+  # ###########################################
+
+    with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
+                        weights_initializer=slim.initializers.xavier_initializer(),
+                        weights_regularizer=slim.l2_regularizer(weight_decay),
+                        activation_fn=None,
+                        biases_initializer=slim.init_ops.zeros_initializer(),
+                        outputs_collections=[end_points_collection]):
+      with slim.arg_scope([slim.batch_norm],
+                          is_training=True,
+                          activation_fn=tf.nn.relu,
+                          updates_collections=None,
+                          decay=0.995,
+                          zero_debias_moving_mean=True,
+                          epsilon=0.001,
+                          variables_collections=tf.GraphKeys.TRAINABLE_VARIABLES,
+                          center=True,
+                          scale=True,
+                          fused=True):
+        
+  # ###########################################
+  # JZ_mobilenet.py  
+  # ###########################################
+  # batch_norm_params = {
+  #   # Decay for the moving averages.
+  #   'decay': 0.995,
+  #   # epsilon to prevent 0s in variance.
+  #   'epsilon': 0.001,
+  #   # force in-place updates of mean and variance estimates
+  #   'updates_collections': None,
+  #   # Moving averages ends up in the trainable variables collection
+  #   'variables_collections': [ tf.GraphKeys.TRAINABLE_VARIABLES ],
+  # }
+  # end_points = {} 
+  # with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
+  #                       weights_initializer=slim.xavier_initializer_conv2d(uniform=True),
+  #                       weights_regularizer=slim.l2_regularizer(weight_decay),
+  #                       normalizer_fn=slim.batch_norm,
+  #                       normalizer_params=batch_norm_params,
+  #                       activation_fn=None):#, 
+  #                       #outputs_collections=[end_points_collection]):
+  #   with tf.variable_scope(scope,[inputs], reuse=reuse):
+  #   #end_points_collection = sc.name + '_end_points'
+
+  #     with slim.arg_scope([slim.batch_norm],
+  #                         is_training=is_training,
+  #                         activation_fn=tf.nn.relu):
+
+
+      
+  # ###########################################
+  # mobilenet.py
+  # ###########################################
+  # with tf.variable_scope(scope) as sc:
+  #   end_points_collection = sc.name + '_end_points'
+  #   with slim.arg_scope([slim.convolution2d, slim.separable_convolution2d],
+  #                       activation_fn=None,
+  #                       outputs_collections=[end_points_collection]):
+  #     with slim.arg_scope([slim.batch_norm],
+  #                         is_training=is_training,
+  #                         activation_fn=tf.nn.relu,
+  #                         fused=True):
+        
+  # with slim.arg_scope(
+  #     [slim.convolution2d, slim.separable_convolution2d],
+  #     weights_initializer=slim.initializers.xavier_initializer(),
+  #     biases_initializer=slim.init_ops.zeros_initializer(),
+  #     weights_regularizer=slim.l2_regularizer(weight_decay)) as sc:
+  #   return sc
+
+
+  # ###########################################
+  # mobilenet_v1.py
+  # ###########################################
+  # def mobilenet_v1_arg_scope(is_training=True,
+  #                          weight_decay=0.00004,
+  #                          stddev=0.09,
+  #                          regularize_depthwise=False,
+  #                          batch_norm_decay=0.9997,
+  #                          batch_norm_epsilon=0.001):
+
+  # batch_norm_params = {
+  #     'center': True,
+  #     'scale': True,
+  #     'decay': batch_norm_decay,
+  #     'epsilon': batch_norm_epsilon,
+  # }
+  # if is_training is not None:
+  #   batch_norm_params['is_training'] = is_training
+
+  # # Set weight_decay for weights in Conv and DepthSepConv layers.
+  # weights_init = tf.truncated_normal_initializer(stddev=stddev)
+  # regularizer = tf.contrib.layers.l2_regularizer(weight_decay)
+  # if regularize_depthwise:
+  #   depthwise_regularizer = regularizer
+  # else:
+  #   depthwise_regularizer = None
+  # with slim.arg_scope([slim.conv2d, slim.separable_conv2d],
+  #                     weights_initializer=weights_init,
+  #                     activation_fn=tf.nn.relu6, normalizer_fn=slim.batch_norm):
+  #   with slim.arg_scope([slim.batch_norm], **batch_norm_params):
+  #     with slim.arg_scope([slim.conv2d], weights_regularizer=regularizer):
+  #       with slim.arg_scope([slim.separable_conv2d],
+  #                           weights_regularizer=depthwise_regularizer) as sc:
+  #         return sc
