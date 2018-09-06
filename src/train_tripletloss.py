@@ -27,6 +27,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+
+
 from datetime import datetime
 import os.path
 import time
@@ -48,7 +52,7 @@ def main(args):
     network = importlib.import_module(args.model_def)
 
     subdir = datetime.strftime(datetime.now(), '%Y%m%d-%H%M%S')
-    log_dir = os.path.join(os.path.expanduser(args.logs_base_dir), subdir)
+    log_dir = os.path.join(os.path.expanduser(args.logs_base_dir), subdir + '-log')
     if not os.path.isdir(log_dir):  # Create the log directory if it doesn't exist
         os.makedirs(log_dir)
     model_dir = os.path.join(os.path.expanduser(args.models_base_dir), subdir)
@@ -76,7 +80,9 @@ def main(args):
         pairs = lfw.read_pairs(os.path.expanduser(args.lfw_pairs))
         # Get the paths for the corresponding images
         lfw_paths, actual_issame = lfw.get_paths(os.path.expanduser(args.lfw_dir), pairs)
-        
+
+    max_acc = 0
+    max_val = 0
     
     with tf.Graph().as_default():
         tf.set_random_seed(args.seed)
@@ -183,16 +189,33 @@ def main(args):
                 train(args, sess, train_set, epoch, image_paths_placeholder, labels_placeholder, labels_batch,
                     batch_size_placeholder, learning_rate_placeholder, phase_train_placeholder, enqueue_op, input_queue, global_step, 
                     embeddings, total_loss, train_op, summary_op, summary_writer, args.learning_rate_schedule_file,
-                    args.embedding_size, anchor, positive, negative, triplet_loss)
-
-                # Save variables and the metagraph if it doesn't exist already
-                save_variables_and_metagraph(sess, saver, summary_writer, model_dir, subdir, step)
-
+                      args.embedding_size, anchor, positive, negative, triplet_loss)
+                
                 # Evaluate on LFW
                 if args.lfw_dir:
                     evaluate(sess, lfw_paths, embeddings, labels_batch, image_paths_placeholder, labels_placeholder, 
                             batch_size_placeholder, learning_rate_placeholder, phase_train_placeholder, enqueue_op, actual_issame, args.batch_size, 
-                            args.lfw_nrof_folds, log_dir, step, summary_writer, args.embedding_size)
+                             args.lfw_nrof_folds, log_dir, step, summary_writer, args.embedding_size, saver, max_acc, max_val, model_dir)
+
+                    
+                    #############################################33
+                    ## white
+                    # print('starting to save the maxacc and maxval ') #fbtian_max
+                    # if acc>acc_tmp:   #fbtian_max
+                    #     maxmodel_path = os.path.join(maxlin_dir, 'model-%s.ckpt_accmax'%subdir) #fbtian_max
+                    #     saver.save(sess, maxmodel_path, write_meta_graph=False)#fbtian_max
+                    #     shutil.copy( maxmodel_path+'.data-00000-of-00001', modelmax_dir)
+                    #     shutil.copy( maxmodel_path+'.index', modelmax_dir)
+                    #     acc_tmp=acc   #fbtian_max
+                    # if val>val_tmp:   #fbtian_max
+                    #     maxmodel_path = os.path.join(maxlin_dir, 'model-%s.ckpt_valmax'%subdir) #fbtian_max
+                    #     saver.save(sess, maxmodel_path, write_meta_graph=False)#fbtian_max
+                    #     shutil.copy( maxmodel_path+'.data-00000-of-00001', modelmax_dir)
+                    #     shutil.copy( maxmodel_path+'.index', modelmax_dir)
+                    #############################################33
+                    
+                # Save variables and the metagraph if it doesn't exist already
+                save_variables_and_metagraph(sess, saver, summary_writer, model_dir, subdir, step)
 
     return model_dir
 
@@ -227,9 +250,9 @@ def train(args, sess, dataset, epoch, image_paths_placeholder, labels_placeholde
         print('%.3f' % (time.time()-start_time))
 
         # Select triplets based on the embeddings
-        print('Selecting suitable triplets for training')
+        # print('Selecting suitable triplets for training')
         triplets, nrof_random_negs, nrof_triplets = select_triplets(emb_array, num_per_class, 
-            image_paths, args.people_per_batch, args.alpha)
+                                                                    image_paths, args.people_per_batch, args.alpha)
         selection_time = time.time() - start_time
         print('(nrof_random_negs, nrof_triplets) = (%d, %d): time=%.3f seconds' % 
             (nrof_random_negs, nrof_triplets, selection_time))
@@ -251,7 +274,17 @@ def train(args, sess, dataset, epoch, image_paths_placeholder, labels_placeholde
             start_time = time.time()
             batch_size = min(nrof_examples-i*args.batch_size, args.batch_size)
             feed_dict = {batch_size_placeholder: batch_size, learning_rate_placeholder: lr, phase_train_placeholder: True}
-            err, _, step, emb, lab = sess.run([loss, train_op, global_step, embeddings, labels_batch], feed_dict=feed_dict)
+
+            #############################################33
+            # white
+            if i == (nrof_batches-2):
+                err, _, step, emb, lab, summary_str = sess.run([loss, train_op, global_step, embeddings, labels_batch, summary_op], feed_dict=feed_dict)
+            else:
+                err, _, step, emb, lab = sess.run([loss, train_op, global_step, embeddings, labels_batch], feed_dict=feed_dict)
+
+
+            #############################################
+            
             emb_array[lab,:] = emb
             loss_array[i] = err
             duration = time.time() - start_time
@@ -261,7 +294,10 @@ def train(args, sess, dataset, epoch, image_paths_placeholder, labels_placeholde
             i += 1
             train_time += duration
             summary.value.add(tag='loss', simple_value=err)
-            
+
+        # white
+        summary_writer.add_summary(summary_str, step)
+        
         # Add validation loss and accuracy to summary
         #pylint: disable=maybe-no-member
         summary.value.add(tag='time/selection', simple_value=selection_time)
@@ -340,7 +376,7 @@ def sample_people(dataset, people_per_batch, images_per_person):
 
 def evaluate(sess, image_paths, embeddings, labels_batch, image_paths_placeholder, labels_placeholder, 
         batch_size_placeholder, learning_rate_placeholder, phase_train_placeholder, enqueue_op, actual_issame, batch_size, 
-        nrof_folds, log_dir, step, summary_writer, embedding_size):
+             nrof_folds, log_dir, step, summary_writer, embedding_size, saver, max_acc, max_val, model_dir):
     start_time = time.time()
     # Run forward pass to calculate embeddings
     print('Running forward pass on LFW images: ', end='')
@@ -375,6 +411,43 @@ def evaluate(sess, image_paths, embeddings, labels_batch, image_paths_placeholde
     summary.value.add(tag='lfw/val_rate', simple_value=val)
     summary.value.add(tag='time/lfw', simple_value=lfw_time)
     summary_writer.add_summary(summary, step)
+
+    # #########################################################
+    # # white -- max_acc
+    # if max_acc < np.mean(accuracy):
+    #     max_acc = np.mean(accuracy)
+    #     print('Saving variables of max_acc model')
+    #     print('max_acc = ', max_acc, '  np.mean(accuracy) = ', np.mean(accuracy))
+
+    #     max_acc_model_dir = os.path.join(os.path.expanduser(model_dir), 'max_acc_')
+    #     if not os.path.isdir(max_acc_model_dir):  # Create the model directory if it doesn't exist
+    #         os.makedirs(max_acc_model_dir)
+    #     max_acc_checkpoint_path = os.path.join(max_acc_model_dir, 'model-max_acc.ckpt')
+    #     # saver.save(sess, max_acc_checkpoint_path, global_step=step, write_meta_graph=False)
+    #     saver.save(sess, max_acc_checkpoint_path, write_meta_graph=False)
+        
+    #     max_acc_metagraph_filename = os.path.join(max_acc_model_dir, 'model-max_acc.meta')
+    #     if not os.path.exists(max_acc_metagraph_filename):
+    #         saver.export_meta_graph(max_acc_metagraph_filename)
+
+            
+    # # white -- max_val    
+    # if max_val < val:
+    #     max_val = val
+    #     print('Saving variables of max_val model')
+
+    #     max_val_model_dir = os.path.join(os.path.expanduser(model_dir), 'max_val_')
+    #     if not os.path.isdir(max_val_model_dir):  # Create the model directory if it doesn't exist
+    #         os.makedirs(max_val_model_dir)
+    #     max_val_checkpoint_path = os.path.join(max_val_model_dir, 'model-max_val.ckpt')
+    #     saver.save(sess, max_val_checkpoint_path, global_step=step, write_meta_graph=False)
+        
+    #     max_val_metagraph_filename = os.path.join(max_val_model_dir, 'model-max_val.meta')
+    #     if not os.path.exists(max_val_metagraph_filename):
+    #         saver.export_meta_graph(max_val_metagraph_filename)
+    # #########################################################
+    
+            
     with open(os.path.join(log_dir,'lfw_result.txt'),'at') as f:
         f.write('%d\t%.5f\t%.5f\n' % (step, np.mean(accuracy), val))
 
