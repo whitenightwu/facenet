@@ -26,10 +26,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+
+import sys
+sys.path.append("/home/ydwu/work/facenet/src")
+
 from scipy import misc
 import tensorflow as tf
 import numpy as np
-import sys
 import os
 import copy
 import argparse
@@ -39,6 +42,11 @@ import align.detect_face
 def main(args):
 
     images = load_and_align_data(args.image_files, args.image_size, args.margin, args.gpu_memory_fraction)
+
+    dataset = facenet.get_dataset("/home/ydwu/work/facenet/ydwu-test_1/result_dataset_v2")
+    paths, labels = facenet.get_image_paths_and_labels(dataset)
+    print("labels = ", labels)
+    
     with tf.Graph().as_default():
 
         with tf.Session() as sess:
@@ -61,7 +69,7 @@ def main(args):
             for i in range(nrof_images):
                 print('%1d: %s' % (i, args.image_files[i]))
             print('')
-            
+
             # Print distance matrix
             print('Distance matrix')
             print('    ', end='')
@@ -74,7 +82,40 @@ def main(args):
                     dist = np.sqrt(np.sum(np.square(np.subtract(emb[i,:], emb[j,:]))))
                     print('  %1.4f  ' % dist, end='')
                 print('')
-            
+
+            # white
+            xxx = []                
+            count = 0
+            magin = 0.6
+            for i in range(nrof_images):
+                # print('%1d  ' % i, end='')
+                min_dist = []
+                for j in range(nrof_images):
+                    dist = np.sqrt(np.sum(np.square(np.subtract(emb[i,:], emb[j,:]))))
+                    # print("dist = ", dist)
+                    if(dist == 0.0):
+                        min_dist.append('NAN')
+                    else:
+                        min_dist.append(dist)
+                    # print('  %1.4f  ' % dist, end='')
+                # print('')
+                print("==================")
+                print(min_dist)
+                xx = min_dist.index(min(min_dist))
+                # print("i = ", i, " VS ", "min_dist = ", xx)
+                print("i = ", labels[i], " VS ", "min_dist = ", labels[xx])
+                print("min_dist = ", min_dist[xx])
+                
+                # if labels[i] == labels[xx]:
+
+                if ((labels[i] == labels[xx]) and (min_dist[xx] <= magin)) or ((labels[i] != labels[xx]) and (min_dist[xx] > magin)):
+                    print("True")
+                    count = count + 1
+                else:
+                    print("False")
+                    # print("xxx = ", xxx)
+            print("ACC = ", count, " / ", nrof_images)
+
             
 def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
 
@@ -115,9 +156,9 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('model', type=str, 
+    parser.add_argument('--model', type=str, 
         help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file')
-    parser.add_argument('image_files', type=str, nargs='+', help='Images to compare')
+    parser.add_argument('--image_files', type=str, nargs='+', help='Images to compare')
     parser.add_argument('--image_size', type=int,
         help='Image size (height, width) in pixels.', default=160)
     parser.add_argument('--margin', type=int,

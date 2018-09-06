@@ -82,9 +82,13 @@ def main(args):
             idx_array = np.zeros((0,), dtype=np.int32)
             lab_array = np.zeros((0,), dtype=np.int32)
             index_arr = np.append(0, np.cumsum(nrof_examples_per_class))
+            print("nrof_examples_per_class = ", nrof_examples_per_class)
+            print("index_arr = ",index_arr)
             for i in range(nrof_batches):
                 t = time.time()
                 emb, idx = sess.run([embeddings, label_batch])
+                print(emb)
+                print("i = ", emb.shape)
                 emb_array = np.append(emb_array, emb, axis=0)
                 idx_array = np.append(idx_array, idx, axis=0)
                 lab_array = np.append(lab_array, label_array[idx], axis=0)
@@ -111,7 +115,10 @@ def main(args):
             print('Writing filtering data to %s' % args.data_file_name)
             mdict = {'class_names':class_names, 'image_list':image_list, 'label_list':label_list, 'distance_to_center':distance_to_center }
             with h5py.File(args.data_file_name, 'w') as f:
+                print(mdict)
                 for key, value in iteritems(mdict):
+                    print("value = ", value)
+                    print("key = ", key)
                     f.create_dataset(key, data=value)
                         
 def parse_arguments(argv):
@@ -126,7 +133,7 @@ def parse_arguments(argv):
     parser.add_argument('--image_size', type=int,
         help='Image size.', default=160)
     parser.add_argument('--batch_size', type=int,
-        help='Number of images to process in a batch.', default=90)
+        help='Number of images to process in a batch.', default=9)
     return parser.parse_args(argv)
 
 if __name__ == '__main__':

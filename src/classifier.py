@@ -26,12 +26,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import sys
+sys.path.append("/home/ydwu/work/facenet/src")
+
 import tensorflow as tf
 import numpy as np
 import argparse
 import facenet
 import os
-import sys
 import math
 import pickle
 from sklearn.svm import SVC
@@ -86,7 +88,8 @@ def main(args):
                 images = facenet.load_data(paths_batch, False, False, args.image_size)
                 feed_dict = { images_placeholder:images, phase_train_placeholder:False }
                 emb_array[start_index:end_index,:] = sess.run(embeddings, feed_dict=feed_dict)
-            
+
+            # print("emb_array = ",emb_array, " emb_array.shape", emb_array.shape)
             classifier_filename_exp = os.path.expanduser(args.classifier_filename)
 
             if (args.mode=='TRAIN'):
@@ -138,14 +141,14 @@ def split_dataset(dataset, min_nrof_images_per_class, nrof_train_images_per_clas
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('mode', type=str, choices=['TRAIN', 'CLASSIFY'],
+    parser.add_argument('--mode', type=str, choices=['TRAIN', 'CLASSIFY'],
         help='Indicates if a new classifier should be trained or a classification ' + 
         'model should be used for classification', default='CLASSIFY')
-    parser.add_argument('data_dir', type=str,
+    parser.add_argument('--data_dir', type=str,
         help='Path to the data directory containing aligned LFW face patches.')
-    parser.add_argument('model', type=str, 
+    parser.add_argument('--model', type=str, 
         help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file')
-    parser.add_argument('classifier_filename', 
+    parser.add_argument('--classifier_filename', 
         help='Classifier model file name as a pickle (.pkl) file. ' + 
         'For training this is the output and for classification this is an input.')
     parser.add_argument('--use_split_dataset', 
