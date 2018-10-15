@@ -1,4 +1,9 @@
 """ Face Cluster """
+
+
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+
 import tensorflow as tf
 import numpy as np
 import importlib
@@ -6,6 +11,8 @@ import argparse
 import facenet
 import os
 import math
+
+
 def face_distance(face_encodings, face_to_compare):
     """
     Given a list of face encodings, compare them to a known face encoding and get a euclidean distance
@@ -26,7 +33,7 @@ def load_model(model_dir, meta_file, ckpt_file):
     saver = tf.train.import_meta_graph(os.path.join(model_dir_exp, meta_file))
     saver.restore(tf.get_default_session(), os.path.join(model_dir_exp, ckpt_file))
 
-def _chinese_whispers(encoding_list, threshold=0.55, iterations=20):
+def _chinese_whispers(encoding_list, threshold=0.75, iterations=15):
     """ Chinese Whispers Algorithm
 
     Modified from Alex Loveless' implementation,
@@ -86,7 +93,7 @@ def _chinese_whispers(encoding_list, threshold=0.55, iterations=20):
     # Iterate
     for _ in range(0, iterations):
         cluster_nodes = G.nodes()
-        shuffle(cluster_nodes)
+        shuffle(list(cluster_nodes))
         for node in cluster_nodes:
             neighbors = G[node]
             clusters = {}
@@ -240,7 +247,8 @@ def main(args):
                 embedding_size,nrof_images,nrof_batches,emb_array,args.batch_size,image_paths)
             sorted_clusters = cluster_facial_encodings(facial_encodings)
             num_cluster = len(sorted_clusters)
-                
+
+            print ("num_cluster", num_cluster)
             # Copy image files to cluster folders
             for idx, cluster in enumerate(sorted_clusters):
                 #save all the cluster
@@ -250,17 +258,18 @@ def main(args):
                 for path in cluster:
                     shutil.copy(path, join(cluster_dir, basename(path)))
 
-def parse_args():
+def parse_arguments(argv):
     """Parse input arguments."""
     import argparse
+    parser = argparse.ArgumentParser()
+        
     parser = argparse.ArgumentParser(description='Get a shape mesh (t-pose)')
     parser.add_argument('--model_dir', type=str, help='model dir', required=True)
     parser.add_argument('--batch_size', type=int, help='batch size', required=30)
     parser.add_argument('--input', type=str, help='Input dir of images', required=True)
     parser.add_argument('--output', type=str, help='Output dir of clusters', required=True)
-    args = parser.parse_args()
 
-    return args
+    return parser.parse_args(argv)
 
 if __name__ == '__main__':
     """ Entry point """

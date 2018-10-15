@@ -43,7 +43,8 @@ def main(args):
 
     images = load_and_align_data(args.image_files, args.image_size, args.margin, args.gpu_memory_fraction)
 
-    dataset = facenet.get_dataset("/home/ydwu/work/facenet/ydwu-test_1/result_dataset_v2")
+    # white
+    dataset = facenet.get_dataset("/home/ydwu/work/facenet/zz_ydwu_test_2/origine_dataset-3002/hu")#origine_dataset-3002/hu/ #origine_dataset-3000/2
     paths, labels = facenet.get_image_paths_and_labels(dataset)
     print("labels = ", labels)
     
