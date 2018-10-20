@@ -4,14 +4,14 @@
 # 
 # Copyright (c) 2016
 
-# import src.calculate_filtering_metrics as facenet_train
+import src.calculate_filtering_metrics as facenet_train
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
  
 if __name__ == "__main__":
-    argv = ['--dataset_dir','/home/ydwu/work/facenet/ydwu-test_1/result_dataset_v2',
+    argv = ['--dataset_dir','/home/ydwu/work/facenet/zz_ydwu_face_search/dataset_and_result/origine_dataset-2',
             '--model_file','/home/ydwu/work/facenet/origine-models/facenet_bake/20170512-110547.pb',
-            '--data_file_name','/home/ydwu/work/facenet/zz-ydwu-test_2/filtering_metrics',
+            '--data_file_name','/tmp/ydwu-face/filtering_metrics',
             '--image_size','160',
             '--batch_size', '70']
     print(argv)

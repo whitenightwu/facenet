@@ -44,33 +44,37 @@ os.system("sed -i \"s/face_emb_6',/face_emb_7',/g\" ./zz-ydwu-face_recognition.p
 os.system("python zz-ydwu-face_recognition.py")
 
 print("#################################")
-os.system("sed -i \"s/face_emb_7',/face_emb_8',/g\" ./zz-ydwu-face_recognition.py")
-os.system("python zz-ydwu-face_recognition.py")
+os.system("sed -i \"s/face_emb_7',/face_emb_0',/g\" ./zz-ydwu-face_recognition.py")
 
-print("#################################")
-os.system("sed -i \"s/face_emb_8',/face_emb_9',/g\" ./zz-ydwu-face_recognition.py")
-os.system("python zz-ydwu-face_recognition.py")
 
-print("#################################")
-os.system("sed -i \"s/face_emb_9',/face_emb_10',/g\" ./zz-ydwu-face_recognition.py")
-os.system("python zz-ydwu-face_recognition.py")
+# print("#################################")
+# os.system("sed -i \"s/face_emb_7',/face_emb_8',/g\" ./zz-ydwu-face_recognition.py")
+# os.system("python zz-ydwu-face_recognition.py")
 
-print("#################################")
-os.system("sed -i \"s/face_emb_10',/face_emb_11',/g\" ./zz-ydwu-face_recognition.py")
-os.system("python zz-ydwu-face_recognition.py")
+# print("#################################")
+# os.system("sed -i \"s/face_emb_8',/face_emb_9',/g\" ./zz-ydwu-face_recognition.py")
+# os.system("python zz-ydwu-face_recognition.py")
 
-print("#################################")
-os.system("sed -i \"s/face_emb_11',/face_emb_12',/g\" ./zz-ydwu-face_recognition.py")
-os.system("python zz-ydwu-face_recognition.py")
+# print("#################################")
+# os.system("sed -i \"s/face_emb_9',/face_emb_10',/g\" ./zz-ydwu-face_recognition.py")
+# os.system("python zz-ydwu-face_recognition.py")
 
-print("#################################")
-os.system("sed -i \"s/face_emb_12',/face_emb_13',/g\" ./zz-ydwu-face_recognition.py")
-os.system("python zz-ydwu-face_recognition.py")
+# print("#################################")
+# os.system("sed -i \"s/face_emb_10',/face_emb_11',/g\" ./zz-ydwu-face_recognition.py")
+# os.system("python zz-ydwu-face_recognition.py")
 
-print("#################################")
-os.system("sed -i \"s/face_emb_13',/face_emb_14',/g\" ./zz-ydwu-face_recognition.py")
-os.system("python zz-ydwu-face_recognition.py")
+# print("#################################")
+# os.system("sed -i \"s/face_emb_11',/face_emb_12',/g\" ./zz-ydwu-face_recognition.py")
+# os.system("python zz-ydwu-face_recognition.py")
 
-print("#################################")
-os.system("sed -i \"s/face_emb_14',/face_emb_0',/g\" ./zz-ydwu-face_recognition.py")
+# print("#################################")
+# os.system("sed -i \"s/face_emb_12',/face_emb_13',/g\" ./zz-ydwu-face_recognition.py")
+# os.system("python zz-ydwu-face_recognition.py")
+
+# print("#################################")
+# os.system("sed -i \"s/face_emb_13',/face_emb_14',/g\" ./zz-ydwu-face_recognition.py")
+# os.system("python zz-ydwu-face_recognition.py")
+
+# print("#################################")
+# os.system("sed -i \"s/face_emb_14',/face_emb_0',/g\" ./zz-ydwu-face_recognition.py")
 

@@ -180,9 +180,9 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction, de
         img_size = np.asarray(img.shape)[0:2]
         bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
         if len(bounding_boxes) < 1:
-            image_paths.remove(image)
-            print("can't detect face, remove ", image)
-            continue
+          image_paths.remove(image)
+          print("can't detect face, remove ", image)
+          continue
 
         ###################################
         nrof_faces = bounding_boxes.shape[0]

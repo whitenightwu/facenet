@@ -52,7 +52,7 @@ def main(args):
     class_names = [cls.name for cls in dataset]
     
     images = load_and_align_data(image_list, args.image_size, args.margin, args.gpu_memory_fraction)
-    print("len(images) = ", len(images))
+    # print("len(images) = ", len(images))
 
     
     with tf.Graph().as_default():
@@ -130,14 +130,14 @@ def main(args):
                     print("dataset_img_label : ", f['image_dir'][dist_list.index(min_dist)])
                     print("True")
 
-                    ### show img
-                    im1 = Image.open(image_list[i])
-                    plt.subplot(121)
-                    plt.imshow(im1)
+                    # ### show img
+                    # im1 = Image.open(image_list[i])
+                    # plt.subplot(121)
+                    # plt.imshow(im1)
 
-                    im2 = Image.open(f['image_dir'][dist_list.index(min_dist)])
-                    plt.subplot(122)
-                    plt.imshow(im2)
+                    # im2 = Image.open(f['image_dir'][dist_list.index(min_dist)])
+                    # plt.subplot(122)
+                    # plt.imshow(im2)
                     
 
                     ### save img
@@ -203,6 +203,47 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
           image_paths.remove(image)
           print("can't detect face, remove ", image)
           continue
+
+        ###################################
+        
+        # nrof_faces = bounding_boxes.shape[0]
+        # print("nrof_faces = ", nrof_faces)
+        # if nrof_faces>0:
+        #     det = bounding_boxes[:,0:4]
+        #     det_arr = []
+        #     img_size = np.asarray(img.shape)[0:2]
+        #     if nrof_faces>1:
+        #         if detect_multiple_faces:
+        #             for i in range(nrof_faces):
+        #                 det_arr.append(np.squeeze(det[i]))
+        #             else:
+        #                 bounding_box_size = (det[:,2]-det[:,0])*(det[:,3]-det[:,1])
+        #                 img_center = img_size / 2
+        #                 offsets = np.vstack([ (det[:,0]+det[:,2])/2-img_center[1], (det[:,1]+det[:,3])/2-img_center[0] ])
+        #                 offset_dist_squared = np.sum(np.power(offsets,2.0),0)
+        #                 index = np.argmax(bounding_box_size-offset_dist_squared*2.0) # some extra weight on the centering
+        #                 det_arr.append(det[index,:])
+        #         else:
+        #             det_arr.append(np.squeeze(det))
+                    
+        #         for i, det in enumerate(det_arr):
+        #             det = np.squeeze(det)
+        #             bb = np.zeros(4, dtype=np.int32)
+        #             bb[0] = np.maximum(det[0]-margin/2, 0)
+        #             bb[1] = np.maximum(det[1]-margin/2, 0)
+        #             bb[2] = np.minimum(det[2]+margin/2, img_size[1])
+        #             bb[3] = np.minimum(det[3]+margin/2, img_size[0])
+        #             cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
+        #             scaled = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
+        #             prewhitened = facenet.prewhiten(scaled)
+        #             img_list.append(prewhitened)
+        #             output_filename_n = "{}_{}".format(image[:-4], str(i)+".jpg")
+        #             print(output_filename_n)
+        #             misc.imsave(output_filename_n, scaled)
+                    
+        # ###################################
+
+              
         det = np.squeeze(bounding_boxes[0,0:4])
         bb = np.zeros(4, dtype=np.int32)
         bb[0] = np.maximum(det[0]-margin/2, 0)
@@ -213,6 +254,11 @@ def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
         aligned = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
         prewhitened = facenet.prewhiten(aligned)
         img_list.append(prewhitened)
+        # print(img_list)
+
+        ###################################
+
+        
     images = np.stack(img_list)
     return images
 
@@ -230,6 +276,9 @@ def parse_arguments(argv):
         help='Margin for the crop around the bounding box (height, width) in pixels.', default=44)
     parser.add_argument('--gpu_memory_fraction', type=float,
         help='Upper bound on the amount of GPU memory that will be used by the process.', default=1.0)
+    parser.add_argument('--detect_multiple_faces', type=bool,
+                        help='Detect and align multiple faces per image.', default=True)
+
     return parser.parse_args(argv)
 
 if __name__ == '__main__':

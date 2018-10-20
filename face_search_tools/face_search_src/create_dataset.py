@@ -41,87 +41,59 @@ def main(args):
     # print("label_list", label_list)
     #print("class_names", class_names)
     nrof_images = len(image_list)
-    
+
+
     images = load_and_align_data(image_list, args.image_size, args.margin, args.gpu_memory_fraction)
     print("len(images) = ", len(images))
+    # print(images[0])
+    # print(images[len(images)-1])
     
+    kkk = 200
+    nrof_batches = int(np.ceil(nrof_images / kkk))
+
     with tf.Graph().as_default():
 
         with tf.Session() as sess:
       
             # Load the model
-            # facenet.load_model(args.model)
-            facenet.load_model("/home/ydwu/work/facenet/origine-models/facenet_bake")
-            
-            
+            facenet.load_model(args.model)
+            # facenet.load_model("/home/ydwu/work/facenet/origine-models/facenet_bake")
+                
             # Get input and output tensors
             images_placeholder = tf.get_default_graph().get_tensor_by_name("input:0")
             embeddings = tf.get_default_graph().get_tensor_by_name("embeddings:0")
             phase_train_placeholder = tf.get_default_graph().get_tensor_by_name("phase_train:0")
 
-
-            ##########################
-            ##########################
-            ##########################
-            
-
-            labels_batch = tf.get_default_graph().get_tensor_by_name("label_batch:0")
-            batch_size_placeholder = tf.get_default_graph().get_tensor_by_name("batch_size:0")
-            learning_rate_placeholder = tf.get_default_graph().get_tensor_by_name("learning_rate:0")
-            image_paths_placeholder = tf.get_default_graph().get_tensor_by_name("image_paths:0")
-            labels_placeholder = tf.get_default_graph().get_tensor_by_name("labels:0")
-
-            labels_array = np.reshape(np.arange(nrof_images),(-1,1))
-            image_paths_array = np.reshape(np.expand_dims(np.array(image_list),1), (-1,1))
-
-            print(len(image_paths_array))
-            print(image_paths_array.shape)
-            print(len(labels_array))
-            print(batch_size_placeholder)
-            print(labels_batch)
-
-            print(image_paths_placeholder)
-            print(labels_placeholder)
-            
-            # input_queue = data_flow_ops.FIFOQueue(capacity=100000,
-            #                                       dtypes=[tf.string, tf.int64],
-            #                                       shapes=[(3,), (3,)],
-            #                                       shared_name=None, name=None)
-            # enqueue_op = input_queue.enqueue_many([image_paths_placeholder, labels_placeholder])
-
-            # sess.run(enqueue_op, {image_paths_placeholder: image_paths_array, labels_placeholder: labels_array})
-
-            sess.run(tf.global_variables_initializer(), feed_dict={phase_train_placeholder:False})
-            sess.run(tf.local_variables_initializer(), feed_dict={phase_train_placeholder:False})
-
-            
-            nrof_batches = int(np.ceil(nrof_images / 3))
             for i in range(nrof_batches):
-                aa_begin = i*3
-                aa_end = i*3 +3
-                batch_size = min(nrof_images-i*3, 3)
-
-                aa_image_paths_array = image_paths_array[aa_begin:aa_end]
-                aa_labels_array = labels_array[aa_begin:aa_end]
-                print(aa_image_paths_array)
-                print(aa_labels_array)
-                print("=================================================")                
-                
-                emb = sess.run(embeddings, feed_dict={images_placeholder: aa_image_paths_array, phase_train_placeholder:False})
-
-                # emb = sess.run(embeddings, feed_dict={batch_size_placeholder: batch_size,phase_train_placeholder:False})
-                # emb, lab = sess.run([embeddings,labels_batch], feed_dict={image_paths_placeholder: aa_image_paths_array, labels_placeholder: aa_labels_array, batch_size_placeholder: batch_size,phase_train_placeholder:False, learning_rate_placeholder:0.0})
-                # emb = sess.run(embeddings, feed_dict={image_paths_placeholder: image_paths_array, batch_size_placeholder: batch_size,phase_train_placeholder:False})
-                
-                
-                #print(emb)
-                print(len(emb))
-                print(emb.shape)
-
                 print("=================================================")
-                mdict = {'class_names':class_names, 'image_list':image_list, 'label_list':lab, 'embedding':emb }
-                with h5py.File(args.save_dir, 'wa') as f:
-                    #print(mdict)
+                aa_begin = i * kkk
+                aa_end = min(i*kkk + kkk, nrof_images)
+                # batch_size = min(nrof_images-aa_begin, kkk)
+
+                # aa_image_paths_array = image_paths_array[aa_begin:aa_end]
+                # aa_labels_array = labels_array[aa_begin:aa_end]
+                # print(aa_image_paths_array)
+                # print(aa_labels_array)
+                # print("=================================================")
+                
+                batch_images = images[aa_begin:aa_end]
+                batch_labels = label_list[aa_begin:aa_end]
+                batch_image_dir = image_list[aa_begin:aa_end]
+                print("aa_begin =", aa_begin, "  aa_end = ", aa_end)
+                print("batch_images.shape = ", batch_images.shape)                
+                
+                                
+                emb = sess.run(embeddings, feed_dict={images_placeholder: batch_images, phase_train_placeholder:False})
+                lab = batch_labels
+                print("emb.shape = ", emb.shape)
+
+                mdict = {'class_names':class_names, 'image_dir':batch_image_dir, 'label_list':lab, 'embedding':emb }
+                
+                aa_save_dir = os.path.join(args.save_dir +str(i))
+                # args.save_dir.join(i)
+
+                print(aa_save_dir)
+                with h5py.File(aa_save_dir, 'w') as f:
                     for key, value in iteritems(mdict):
                         #print("============================")
                         #print("value = ", value)
@@ -129,12 +101,22 @@ def main(args):
                         f.create_dataset(key, data=value)
 
 
-    ###
-    fff = h5py.File(args.save_dir, 'r')
-    for key in fff.keys():
-        print(fff[key].name)
-        print(fff[key].shape)
-        # print(f[key].value)
+
+                # if i == 0:
+                #     with h5py.File(aa_save_dir, 'w') as f:
+                #         for key, value in iteritems(mdict):
+                #             #print("============================")
+                #             #print("value = ", value)
+                #             #print("key = ", key)
+                #             f.create_dataset(key, data=value)
+                # else:
+                #     with h5py.File(args.save_dir, 'a') as f:
+                #         for key, value in iteritems(mdict):
+                #             #print("============================")
+                #             #print("value = ", value)
+                #             #print("key = ", key)
+                #             f.create_dataset(key, data=value)
+                #             # f[key]=value
 
                         
             ##########################

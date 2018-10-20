@@ -42,7 +42,8 @@ from six import iteritems
 
 
 ##################################
-a_pwd = "/home/ydwu/work/facenet/zz_ydwu_test_2/face_emb_dataset"
+# a_pwd = "/home/ydwu/work/facenet/zz_ydwu_test_2/face_emb_dataset"
+a_pwd = "/tmp/ydwu-face"
 face_emb_dataset = os.listdir(a_pwd)
 print(face_emb_dataset)
 for face_emb_name in face_emb_dataset:
