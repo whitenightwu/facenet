@@ -13,9 +13,12 @@ import tensorflow.contrib.slim as slim
 if __name__ == "__main__":
     argv = ['--logs_base_dir','/home/ydwu/work/facenet/train_office_mobilenet',
             '--models_base_dir','/home/ydwu/work/facenet/train_office_mobilenet',
-            '--data_dir', '/media/ydwu/Document/Datasets/white-ms1mclean', #'/media/ydwu/Office/tmp_dataset',
+            '--data_dir', '/media/ydwu/Office/tmp_dataset',#'/media/ydwu/Document/Datasets/white-ms1mclean', #'/media/ydwu/Office/tmp_dataset',
             
-            '--pretrained_model', '/home/ydwu/work/facenet/train_office_mobilenet/20180927-175921/model-20180927-175921.ckpt-26036',#20180925-131347/model-20180925-131347.ckpt-203166',#20180921-093412/model-20180921-093412.ckpt-33821',#20180919-102235/model-20180919-102235.ckpt-116049',#20180918-163310/model-20180918-163310.ckpt-68368',#20180918-101807/model-20180918-101807.ckpt-20608',#20180917-114021/model-20180917-114021.ckpt-87983',#20180912-194025/model-20180912-194025.ckpt-246230',
+            '--pretrained_model', '/home/ydwu/work/facenet/train_office_mobilenet/20180928-093249/model-20180928-093249.ckpt-186752',
+            
+            #/home/ydwu/work/facenet/train_office_mobilenet/20180927-175921/model-20180927-175921.ckpt-26036',#20180925-131347/model-20180925-131347.ckpt-203166',#20180921-093412/model-20180921-093412.ckpt-33821',#20180919-102235/model-20180919-102235.ckpt-116049',#20180918-163310/model-20180918-163310.ckpt-68368',#20180918-101807/model-20180918-101807.ckpt-20608',#20180917-114021/model-20180917-114021.ckpt-87983',#20180912-194025/model-20180912-194025.ckpt-246230',
+            
             #train_office_mobilenet/20180910-093513/model-20180910-093513.ckpt-225303',#20180906-132015/model-20180906-132015.ckpt-175994',#20180903-091340/model-20180903-091340.ckpt-240521',#work/facenet/train_office_mobilenet/20180831-161429/model-20180831-161429.ckpt-83882',#20180830-093952/model-20180830-093952.ckpt-25896
             '--model_def', 'src.models.mobilenet',#JZ_#.office
             '--gpu_memory_fraction','0.8',

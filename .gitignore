@@ -104,3 +104,4 @@ train_office_mobilenet/*
 # images and emb_datasets for face_recognition
 face_search_tools/dataset_and_result/*
 nir2*
+src/generative/vae_result/*

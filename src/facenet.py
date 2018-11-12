@@ -446,6 +446,7 @@ def calculate_roc(thresholds, embeddings1, embeddings2, actual_issame, nrof_fold
         for threshold_idx, threshold in enumerate(thresholds):
             _, _, acc_train[threshold_idx] = calculate_accuracy(threshold, dist[train_set], actual_issame[train_set])
         best_threshold_index = np.argmax(acc_train)
+        print("best_threshold_index = ", thresholds[best_threshold_index])
         for threshold_idx, threshold in enumerate(thresholds):
             tprs[fold_idx,threshold_idx], fprs[fold_idx,threshold_idx], _ = calculate_accuracy(threshold, dist[test_set], actual_issame[test_set])
         _, _, accuracy[fold_idx] = calculate_accuracy(thresholds[best_threshold_index], dist[test_set], actual_issame[test_set])
@@ -464,6 +465,9 @@ def calculate_accuracy(threshold, dist, actual_issame):
     tpr = 0 if (tp+fn==0) else float(tp) / float(tp+fn)
     fpr = 0 if (fp+tn==0) else float(fp) / float(fp+tn)
     acc = float(tp+tn)/dist.size
+
+    if threshold==0.52:
+        print("threshold = ", threshold, ",  acc = ", acc)
     return tpr, fpr, acc
 
 
@@ -516,6 +520,9 @@ def calculate_val_far(threshold, dist, actual_issame):
     else:
         val = float(true_accept) / float(n_same)
     far = float(false_accept) / float(n_diff)
+
+    if threshold==0.52:
+        print("threshold = ", threshold, ",  val = ", val, ",  far = ", far)
     return val, far
 
 def store_revision_info(src_path, output_dir, arg_string):

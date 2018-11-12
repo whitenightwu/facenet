@@ -32,6 +32,10 @@ import sys
 import time
 import importlib
 import argparse
+
+import sys  
+sys.path.append("/home/ydwu/work/facenet/src")
+
 import facenet
 import numpy as np
 import h5py
@@ -155,10 +159,11 @@ def main(args):
         with tf.control_dependencies([apply_gradient_op]):
             train_op = tf.no_op(name='train')
 
+        print(tf.trainable_variables())
         # Create a saver
         saver = tf.train.Saver(tf.trainable_variables(), max_to_keep=3)
         
-        facenet_saver = tf.train.Saver(get_facenet_variables_to_restore())
+        # facenet_saver = tf.train.Saver(get_facenet_variables_to_restore())
 
         # Start running operations on the Graph
         gpu_memory_fraction = 1.0
@@ -176,7 +181,7 @@ def main(args):
                     raise ValueError('A pretrained model must be specified when using perceptual loss')
                 pretrained_model_exp = os.path.expanduser(args.pretrained_model)
                 print('Restoring pretrained model: %s' % pretrained_model_exp)
-                facenet_saver.restore(sess, pretrained_model_exp)
+                # facenet_saver.restore(sess, pretrained_model_exp)
           
             log = {
                 'total_loss': np.zeros((0,), np.float),
@@ -192,8 +197,17 @@ def main(args):
                 step += 1
                 save_state = step>0 and (step % args.save_every_n_steps==0 or step==args.max_nrof_steps)
                 if save_state:
-                    _, reconstruction_loss_, kl_loss_mean_, total_loss_, learning_rate_, rec_ = sess.run(
-                          [train_op, reconstruction_loss, kl_loss_mean, total_loss, learning_rate, reconstructed])
+                    _, reconstruction_loss_, kl_loss_mean_, total_loss_, learning_rate_, rec_, ydwu_latent, ydwu_mean, ydwu_epsilon, ydwu_std = sess.run(
+                          [train_op, reconstruction_loss, kl_loss_mean, total_loss, learning_rate, reconstructed, latent_var, mean, epsilon, std])
+
+
+                    print("epsilon = ", ydwu_epsilon)
+                    print("mean = ", ydwu_mean)
+                    print("std = ", ydwu_std)
+                    print("latent_var = ", ydwu_latent)
+                    print("latent_var.size = ", len(ydwu_latent))
+                    print("latent_var.size = ", len(ydwu_latent[0]))
+                    
                     img = facenet.put_images_on_grid(rec_, shape=(16,8))
                     misc.imsave(os.path.join(model_dir, 'reconstructed_%06d.png' % step), img)
                 else:
@@ -238,13 +252,13 @@ def kl_divergence_loss(mean, log_variance):
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('vae_def', type=str,
+    parser.add_argument('--vae_def', type=str,
         help='Model definition for the variational autoencoder. Points to a module containing the definition.')
-    parser.add_argument('data_dir', type=str,
+    parser.add_argument('--data_dir', type=str,
         help='Path to the data directory containing aligned face patches.')
-    parser.add_argument('model_def', type=str,
+    parser.add_argument('--model_def', type=str,
         help='Model definition. Points to a module containing the definition of the inference graph.')
-    parser.add_argument('pretrained_model', type=str,
+    parser.add_argument('--pretrained_model', type=str,
         help='Pretrained model to use to calculate features for perceptual loss.')
     parser.add_argument('--models_base_dir', type=str,
         help='Directory where to write trained models and checkpoints.', default='~/vae')

@@ -27,6 +27,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from six import string_types, iteritems
+from tensorflow.python.framework.graph_util import convert_variables_to_constants
+
 
 import numpy as np
 import tensorflow as tf
@@ -94,6 +96,15 @@ class Network(object):
                         if not ignore_missing:
                             raise
 
+
+    # def freeze(self, network_name, session, outNames = []):
+    #     """ Creates a friezed graph an saves it in the top directory """
+    #     minimal_graph = convert_variables_to_constants(session, session.graph_def, outNames)
+    #     freeze_out_directory = os.path.abspath(os.path.curdir)
+    #     tf.train.write_graph(minimal_graph, freeze_out_directory, network_name + '_graph.proto', as_text=False)
+    #     tf.train.write_graph(minimal_graph, freeze_out_directory, network_name + '.txt', as_text=True)
+
+                        
     def feed(self, *args):
         """Set the input(s) for the next operation by replacing the terminal nodes.
         The arguments can be either layer names or the actual layers.
@@ -323,9 +334,11 @@ def detect_face(img, minsize, pnet, rnet, onet, threshold, factor):
         hs=int(np.ceil(h*scale))
         ws=int(np.ceil(w*scale))
         im_data = imresample(img, (hs, ws))
+        
         im_data = (im_data-127.5)*0.0078125
         img_x = np.expand_dims(im_data, 0)
         img_y = np.transpose(img_x, (0,2,1,3))
+        
         out = pnet(img_y)
         out0 = np.transpose(out[0], (0,2,1,3))
         out1 = np.transpose(out[1], (0,2,1,3))
@@ -779,3 +792,31 @@ def imresample(img, sz):
 #                 im_data[a1,a2,a3] = img[int(floor(a1*dy)),int(floor(a2*dx)),a3]
 #     return im_data
 
+
+
+# def freeze_mtcnn(sess, model_path):
+#     if not model_path:
+#         model_path,_ = os.path.split(os.path.realpath(__file__))
+#     with tf.variable_scope('pnet'):
+#         data = tf.placeholder(tf.float32, (None,None,None,3), 'input')
+#         pnet = PNet({'data':data})
+#         pnet.load(os.path.join(model_path, 'det1.npy'), sess)
+#         pnet.freeze('pnet', sess, ['pnet/conv4-2/BiasAdd', 'pnet/prob1'])
+#     with tf.variable_scope('rnet'):
+#         data = tf.placeholder(tf.float32, (None,24,24,3), 'input')
+#         rnet = RNet({'data':data})
+#         rnet.load(os.path.join(model_path, 'det2.npy'), sess)
+#         rnet.freeze('rnet', sess, ['rnet/conv5-2/conv5-2', 'rnet/prob1'])
+#     with tf.variable_scope('onet'):
+#         data = tf.placeholder(tf.float32, (None,48,48,3), 'input')
+#         onet = ONet({'data':data})
+#         onet.load(os.path.join(model_path, 'det3.npy'), sess)
+#         onet.freeze('onet', sess, ['onet/conv6-2/conv6-2', 'onet/conv6-3/conv6-3', 'onet/prob1'])
+
+
+def freeze(network_name, session, outNames = []):
+    """ Creates a friezed graph an saves it in the top directory """
+    minimal_graph = convert_variables_to_constants(session, session.graph_def, outNames)
+    freeze_out_directory = os.path.abspath(os.path.curdir)
+    tf.train.write_graph(minimal_graph, freeze_out_directory, network_name + '_graph.pb', as_text=False)
+    tf.train.write_graph(minimal_graph, freeze_out_directory, network_name + '.txt', as_text=True)
