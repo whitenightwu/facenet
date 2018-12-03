@@ -60,25 +60,25 @@ def get_paths(lfw_dir, pairs):
     for pair in pairs:
         if len(pair) == 3:
             
-            # path0 = add_extension(os.path.join(lfw_dir, pair[0], pair[0] + '_' + '%04d' % int(pair[1])))
-            # path1 = add_extension(os.path.join(lfw_dir, pair[0], pair[0] + '_' + '%04d' % int(pair[2])))
+            path0 = add_extension(os.path.join(lfw_dir, pair[0], pair[0] + '_' + '%04d' % int(pair[1])))
+            path1 = add_extension(os.path.join(lfw_dir, pair[0], pair[0] + '_' + '%04d' % int(pair[2])))
 
-            # dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/RGB'
-            dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/black'
-            path0 = add_extension(os.path.join(dataset_lfw_dir, pair[0], pair[1]))
-            path1 = add_extension(os.path.join(lfw_dir, pair[0], pair[2]))
+            # # dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/RGB'
+            # dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/black'
+            # path0 = add_extension(os.path.join(dataset_lfw_dir, pair[0], pair[1]))
+            # path1 = add_extension(os.path.join(lfw_dir, pair[0], pair[2]))
             
             
             issame = True
         elif len(pair) == 4:
 
-            # dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/RGB'
-            dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/black'
-            path0 = add_extension(os.path.join(dataset_lfw_dir, pair[0], pair[1]))
-            path1 = add_extension(os.path.join(lfw_dir, pair[2], pair[3]))
+            # # dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/RGB'
+            # dataset_lfw_dir='/home/ydwu/datasets/face_near_infrared_test/black'
+            # path0 = add_extension(os.path.join(dataset_lfw_dir, pair[0], pair[1]))
+            # path1 = add_extension(os.path.join(lfw_dir, pair[2], pair[3]))
             
-            # path0 = add_extension(os.path.join(lfw_dir, pair[0], pair[0] + '_' + '%04d' % int(pair[1])))
-            # path1 = add_extension(os.path.join(lfw_dir, pair[2], pair[2] + '_' + '%04d' % int(pair[3])))
+            path0 = add_extension(os.path.join(lfw_dir, pair[0], pair[0] + '_' + '%04d' % int(pair[1])))
+            path1 = add_extension(os.path.join(lfw_dir, pair[2], pair[2] + '_' + '%04d' % int(pair[3])))
             
             issame = False
         if os.path.exists(path0) and os.path.exists(path1):    # Only add the pair if both paths exist
