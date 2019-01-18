@@ -190,7 +190,10 @@ def main(args):
                     batch_size_placeholder, learning_rate_placeholder, phase_train_placeholder, enqueue_op, input_queue, global_step, 
                     embeddings, total_loss, train_op, summary_op, summary_writer, args.learning_rate_schedule_file,
                       args.embedding_size, anchor, positive, negative, triplet_loss)
-                
+
+                # Save variables and the metagraph if it doesn't exist already
+                save_variables_and_metagraph(sess, saver, summary_writer, model_dir, subdir, step)
+
                 # Evaluate on LFW
                 if args.lfw_dir:
                     evaluate(sess, lfw_paths, embeddings, labels_batch, image_paths_placeholder, labels_placeholder, 
@@ -214,8 +217,8 @@ def main(args):
                     #     shutil.copy( maxmodel_path+'.index', modelmax_dir)
                     #############################################33
                     
-                # Save variables and the metagraph if it doesn't exist already
-                save_variables_and_metagraph(sess, saver, summary_writer, model_dir, subdir, step)
+                # # Save variables and the metagraph if it doesn't exist already
+                # save_variables_and_metagraph(sess, saver, summary_writer, model_dir, subdir, step)
 
     return model_dir
 

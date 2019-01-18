@@ -47,7 +47,7 @@ def main(args):
     src_path,_ = os.path.split(os.path.realpath(__file__))
     facenet.store_revision_info(src_path, output_dir, ' '.join(sys.argv))
     dataset = facenet.get_dataset(args.input_dir)
-    
+    print("ydwu -- args.input_dir = ", args.input_dir)
     print('Creating networks and loading parameters')
     
     with tf.Graph().as_default():
@@ -83,6 +83,14 @@ def main(args):
                 if not os.path.exists(output_filename):
                     try:
                         img = misc.imread(image_path)
+
+                        # ##########
+                        ydwu_path_split = image_path.split('/')
+                        # ydwu_image_path = os.path.join("/home/ydwu/datasets/zhang_professor/cap/cap_black", ydwu_path_split[-2], ydwu_path_split[-1])
+                        ydwu_image_path = os.path.join("/home/ydwu/datasets/cap_clean/black", ydwu_path_split[-2], ydwu_path_split[-1])
+                        ydwu_img = misc.imread(ydwu_image_path)
+                        print("ydwu -- ", ydwu_image_path)
+                        
                     except (IOError, ValueError, IndexError) as e:
                         errorMessage = '{}: {}'.format(image_path, e)
                         print(errorMessage)
@@ -124,13 +132,34 @@ def main(args):
                                 bb[3] = np.minimum(det[3]+args.margin/2, img_size[0])
                                 cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
                                 scaled = misc.imresize(cropped, (args.image_size, args.image_size), interp='bilinear')
+                                # #####
+                                # ydwu_cropped = ydwu_img[bb[1]:bb[3],bb[0]:bb[2],:]
+                                ydwu_cropped = ydwu_img[(bb[1]+10):(bb[3]+10),(bb[0]+20):(bb[2]+20),:]
+                                ydwu_scaled = misc.imresize(ydwu_cropped, (args.image_size, args.image_size), interp='bilinear')
+                                
                                 nrof_successfully_aligned += 1
                                 filename_base, file_extension = os.path.splitext(output_filename)
                                 if args.detect_multiple_faces:
                                     output_filename_n = "{}_{}{}".format(filename_base, i, file_extension)
+                                    print("yyyyyy")
                                 else:
                                     output_filename_n = "{}{}".format(filename_base, file_extension)
+
+                                    ###
+                                    # ydwu_output_filename_n =  os.path.join("/home/ydwu/datasets/zhang_professor/cap/white-cap_black", ydwu_path_split[-2], ydwu_path_split[-1])
+                                    # ydwu_tmp = os.path.join("/home/ydwu/datasets/zhang_professor/cap/white-cap_black", ydwu_path_split[-2])
+                                    ydwu_output_filename_n =  os.path.join("/home/ydwu/datasets/white-cap_clean/black", ydwu_path_split[-2], ydwu_path_split[-1])
+                                    ydwu_tmp = os.path.join("/home/ydwu/datasets/white-cap_clean/black", ydwu_path_split[-2])
+                                    
+                                    if not os.path.exists(ydwu_tmp):
+                                        os.makedirs(ydwu_tmp)
+                                    print("ydwu -- ", ydwu_output_filename_n)
+                                    
                                 misc.imsave(output_filename_n, scaled)
+                                
+                                ###
+                                misc.imsave(ydwu_output_filename_n, ydwu_scaled)
+                                
                                 text_file.write('%s %d %d %d %d\n' % (output_filename_n, bb[0], bb[1], bb[2], bb[3]))
                         else:
                             print('Unable to align "%s"' % image_path)

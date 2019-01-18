@@ -105,4 +105,4 @@ train_office_mobilenet/*
 face_search_tools/dataset_and_result/*
 nir2*
 src/generative/vae_result/*
-train_nri_mobilenet/*
+train_nri_*
