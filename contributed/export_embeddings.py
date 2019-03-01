@@ -58,8 +58,7 @@ import sys
 import os
 import argparse
 import facenet
-import align.detect_face
-import glob
+
 
 from six.moves import xrange
 
@@ -77,7 +76,12 @@ def main(args):
 
     with tf.Graph().as_default():
 
-        with tf.Session() as sess:
+        # Start running operations on the Graph.
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_memory_fraction)
+        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
+        # with tf.Session() as sess:
+        with sess.as_default():
 
             # Load the model
             facenet.load_model(args.model_dir)
@@ -105,12 +109,11 @@ def main(args):
                     n = nrof_images
                 else:
                     n = i*batch_size + batch_size
+
                 # Get images for the batch
-                if args.is_aligned is True:
-                    images = facenet.load_data(image_list[i*batch_size:n], False, False, args.image_size)
-                else:
-                    images = load_and_align_data(image_list[i*batch_size:n], args.image_size, args.margin, args.gpu_memory_fraction)
+                images = facenet.load_data(image_list[i*batch_size:n], False, False, args.image_size)
                 feed_dict = { images_placeholder: images, phase_train_placeholder:False }
+
                 # Use the facenet model to calcualte embeddings
                 embed = sess.run(embeddings, feed_dict=feed_dict)
                 emb_array[i*batch_size:n, :] = embed
@@ -121,65 +124,29 @@ def main(args):
 
             #   export emedings and labels
             label_list  = np.array(label_list)
-
             np.save(args.embeddings_name, emb_array)
             np.save(args.labels_name, label_list)
             label_strings = np.array(label_strings)
             np.save(args.labels_strings_name, label_strings[label_list])
 
 
-def load_and_align_data(image_paths, image_size, margin, gpu_memory_fraction):
-
-    minsize = 20 # minimum size of face
-    threshold = [ 0.6, 0.7, 0.7 ]  # three steps's threshold
-    factor = 0.709 # scale factor
-
-    print('Creating networks and loading parameters')
-    with tf.Graph().as_default():
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=gpu_memory_fraction)
-        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
-        with sess.as_default():
-            pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
-
-    nrof_samples = len(image_paths)
-    img_list = [None] * nrof_samples
-    for i in xrange(nrof_samples):
-        print(image_paths[i])
-        img = misc.imread(os.path.expanduser(image_paths[i]))
-        img_size = np.asarray(img.shape)[0:2]
-        bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
-        det = np.squeeze(bounding_boxes[0,0:4])
-        bb = np.zeros(4, dtype=np.int32)
-        bb[0] = np.maximum(det[0]-margin/2, 0)
-        bb[1] = np.maximum(det[1]-margin/2, 0)
-        bb[2] = np.minimum(det[2]+margin/2, img_size[1])
-        bb[3] = np.minimum(det[3]+margin/2, img_size[0])
-        cropped = img[bb[1]:bb[3],bb[0]:bb[2],:]
-        aligned = misc.imresize(cropped, (image_size, image_size), interp='bilinear')
-        prewhitened = facenet.prewhiten(aligned)
-        img_list[i] = prewhitened
-    images = np.stack(img_list)
-    return images
-
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('model_dir', type=str,
+    parser.add_argument('--model_dir', type=str,
+                        default='/home/ydwu/project3/zihui_DREAM/embedding_facenet/squeezenet',
         help='Directory containing the meta_file and ckpt_file')
-    parser.add_argument('data_dir', type=str,
+    parser.add_argument('--data_dir', type=str,
+                        default='/home/ydwu/project3/zihui_DREAM/embedding_facenet/white-lfw',
         help='Directory containing images. If images are not already aligned and cropped include --is_aligned False.')
-    parser.add_argument('--is_aligned', type=str,
-        help='Is the data directory already aligned and cropped?', default=True)
+
+
     parser.add_argument('--image_size', type=int,
         help='Image size (height, width) in pixels.', default=160)
-    parser.add_argument('--margin', type=int,
-        help='Margin for the crop around the bounding box (height, width) in pixels.',
-        default=44)
-    parser.add_argument('--gpu_memory_fraction', type=float,
-        help='Upper bound on the amount of GPU memory that will be used by the process.',
-        default=1.0)
     parser.add_argument('--image_batch', type=int,
         help='Number of images stored in memory at a time. Default 500.',
-        default=500)
+        default=77)
+    parser.add_argument('--gpu_memory_fraction', type=float,
+        help='Upper bound on the amount of GPU memory that will be used by the process.', default=0.8)
 
     #   numpy file Names
     parser.add_argument('--embeddings_name', type=str,
@@ -191,6 +158,7 @@ def parse_arguments(argv):
     parser.add_argument('--labels_strings_name', type=str,
         help='Enter string of which the labels as strings numpy array is saved as.',
         default='label_strings.npy')
+
     return parser.parse_args(argv)
 
 if __name__ == '__main__':
